@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+    <title>지니와 오라클 발견상점</title>
+
+<div class="store-logo">
+  <img src="logo.jpg.png" alt="지니와 오라클 발견상점 로고">
+</div>
+    
+</body>
+<div class="ticker-banner">
+  <div class="ticker-track">
+    <span class="ticker-text">
+      ✱ 이 포스팅은 토스쇼핑 쉐어링크 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다.
+    </span>
+    <span class="ticker-text" aria-hidden="true">
+      ✱ 이 포스팅은 토스쇼핑 쉐어링크 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다.
+    </span>
+  </div>
+</div>
+<div class="header">
+
+    <h1>🔴 지니와 오라클 발견상점</h1>
+
+    <p>👇영상 댓글에 나온 상품 번호를 검색해보세요👇</p>
+
+    <input
+        type="text"
+        placeholder="🔍 상품 번호를 입력하세요"
+        id="searchInput"
+    >
+
+</div>
+
+<div id="product-list"></div>
+
+    <style>
+        .product-button {
+    margin-top: 18px;
+    padding: 13px 20px;
+    border-radius: 10px;
+    text-align: center;
+    font-size: 16px;
+    font-weight: bold;
+    background-color: #222;
+    color: white;
+}
+
+.product-button:hover {
+    opacity: 0.85;
+}
+
+        body {
+            background-color: #f5e7d8;
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 40px;
+        }
+
+        h1 {
+            font-size: 36px;
+            margin-bottom: 10px;
+        }
+
+        p {
+            font-size: 18px;
+        }
+
+        .search-box {
+            margin: 30px auto;
+            max-width: 500px;
+        }
+
+        input {
+            width: 100%;
+            padding: 18px;
+            font-size: 18px;
+            border: none;
+            border-radius: 20px;
+            box-sizing: border-box;
+        }
+
+        .product {
+            background-color: white;
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 25px;
+            border-radius: 20px;
+            text-align: left;
+        }
+
+        .product-number {
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .product-name {
+            font-size: 22px;
+            margin-top: 10px;
+        }
+
+        .product-image {
+    width: 100%;
+    height: 250px;
+    object-fit:   scale-down;
+    border-radius: 15px;
+    margin-bottom: 15px;
+}
+.product-link {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    max-width: 520px;
+    margin: 20px auto;
+}
+
+.product {
+    background-color: white;
+    border-radius: 20px;
+    padding: 25px;
+    text-align: left;
+    transition: transform 0.2s, box-shadow 0.2s;
+    cursor: pointer;
+}
+
+.product:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(235, 5, 5, 0.12);
+}
+
+.product-image {
+    width: 100%;
+    height: 250px;
+    object-fit: contain;
+    border-radius: 15px;
+    margin-bottom: 15px;
+}
+
+.product-number {
+    font-size: 14px;
+    color: #777;
+    margin-bottom: 8px;
+}
+
+.product-name {
+    font-size: 20px;
+    font-weight: bold;
+    color: #222;
+}
+   @media (max-width: 600px) {
+
+    body {
+        padding: 15px;
+    }
+
+    h1 {
+        font-size: 24px;
+        text-align: center;
+    }
+
+    p {
+        font-size: 13px;
+        text-align: center;
+    }
+
+    input {
+        width: 100%;
+        height: 48px;
+        font-size: 16px;
+        box-sizing: border-box;
+    }
+
+    .product-link {
+        width: 100%;
+        max-width: 100%;
+        margin: 15px auto;
+    }
+
+    .product {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 15px;
+        border-radius: 15px;
+    }
+
+    .product-image {
+        width: 100%;
+        height: auto;
+        max-height: 220px;
+        object-fit: contain;
+    }
+
+    .product-number {
+        font-size: 13px;
+    }
+
+    .product-name {
+        font-size: 17px;
+        margin-top: 8px;
+    }
+    
+
+}
+.store-logo {
+  text-align: center;
+  margin: 20px auto 12px;
+}
+
+.store-logo img {
+  width: 250px;
+  height: 250px;
+  object-fit: cover;
+  border-radius: 50%;
+  display: block;
+  margin: 0 auto;
+}
+   </style>
+   
+
+<style>
+  .ticker-banner {
+    width: 100%;
+    overflow: hidden;
+    background: #f8f7f4;
+    color: #000000;
+    padding: 11px 0;
+    white-space: nowrap;
+    box-sizing: border-box;
+    font-size: 20px;
+  }
+
+  .ticker-track {
+    display: flex;
+    width: max-content;
+    animation: ticker-scroll 24s linear infinite;
+  }
+
+  .ticker-text {
+    flex-shrink: 0;
+    padding-right: 45px;
+  }
+
+  @keyframes ticker-scroll {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(-50%);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .ticker-track {
+      animation: none;
+    }
+  }
+</style>
+</head>
+
+<div id="product-list"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script src="products-db.js"></script>
+
+</html>
