@@ -1,0 +1,414 @@
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>발견상점 관리자 로그인</title>
+    <style>
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #f5f5f5;
+            font-family: Arial, sans-serif;
+        }
+
+        .login-box {
+            width: 100%;
+            max-width: 400px;
+            padding: 30px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 5px 25px rgba(0,0,0,0.08);
+        }
+
+        h1 { text-align: center; font-size: 24px; }
+        p { text-align: center; color: #666; }
+
+        label {
+            display: block;
+            margin-top: 20px;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        input {
+            width: 100%;
+            padding: 13px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            margin-top: 24px;
+            border: 0;
+            border-radius: 8px;
+            background: #222;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        #message {
+            margin-top: 16px;
+            font-size: 14px;
+            overflow-wrap: anywhere;
+        }
+        .admin-toolbar {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 12px;
+}
+
+.admin-toolbar button {
+    width: auto;
+    margin-top: 0;
+    padding: 10px 16px;
+    background: #b42318;
+}
+    </style>
+    
+
+</head>
+<body>
+    <div class="login-box">
+        <h1>🛍️ 발견상점</h1>
+        <p>관리자 로그인</p>
+
+        <form id="loginForm">
+            <label for="email">이메일</label>
+            <input id="email" type="email"
+                   autocomplete="username" required>
+
+            <label for="password">비밀번호</label>
+            <input id="password" type="password"
+                   autocomplete="current-password" required>
+
+            <button type="submit">로그인</button>
+        </form>
+
+        <div id="message" role="status"></div>
+        
+
+<div id="adminPanel" style="display: none; margin-top: 25px;">
+
+    <div class="admin-toolbar">
+        <button type="button" id="logoutButton">로그아웃</button>
+    </div>
+
+    <h2>상품 등록</h2>
+
+
+    <form id="productForm">
+        <label for="productNumber">상품번호</label>
+        <input
+            id="productNumber"
+            type="text"
+            placeholder="예: 004"
+            required
+        >
+
+        <label for="productName">상품명</label>
+        <input
+            id="productName"
+            type="text"
+            placeholder="상품명을 입력하세요"
+            required
+        >
+
+        <label for="productImage">이미지 파일명</label>
+        <input
+            id="productImage"
+            type="text"
+            placeholder="예: 004.webp"
+            required
+        >
+
+        <label for="productLink">Toss 상품 링크</label>
+        <input
+            id="productLink"
+            type="url"
+            placeholder="https://toss.shopping/..."
+            required
+        >
+
+        <button type="submit">상품 등록하기</button>
+    </form>
+
+    <p id="productMessage" role="status"></p>
+    
+<hr style="margin: 30px 0;">
+
+<h2>등록된 상품 관리</h2>
+
+<button type="button" id="loadProductsButton">
+    상품 목록 새로고침
+</button>
+
+<div id="adminProductList" style="margin-top: 15px;">
+    등록된 상품을 확인하려면 새로고침을 눌러 주세요.
+</div>
+</div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <script>
+        const SUPABASE_URL = "https://gjjyomaqrhtszjtfdumy.supabase.co"
+        const SUPABASE_KEY = "sb_publishable_KwRmtEQg2PpMuQpgpRrC0w_pfDEPwey"
+
+        const supabaseClient = window.supabase.createClient(
+            SUPABASE_URL,
+            SUPABASE_KEY
+        );
+
+        const loginForm = document.querySelector("#loginForm");
+        const message = document.querySelector("#message");
+
+        loginForm.addEventListener("submit", async function(event) {
+            event.preventDefault();
+
+            const email = document.querySelector("#email").value.trim();
+            const password = document.querySelector("#password").value;
+
+            message.textContent = "로그인 확인 중...";
+
+            const { data, error } =
+                await supabaseClient.auth.signInWithPassword({
+                    email: email,
+                    password: password
+                });
+
+            if (error) {
+                console.error("로그인 오류:", error);
+                message.textContent =
+                    "로그인에 실패했어요. 이메일과 비밀번호를 확인해 주세요.";
+                return;
+            }
+
+            
+const { data: isAdmin, error: roleError } =
+    await supabaseClient.rpc("is_store_admin");
+
+if (roleError) {
+    console.error("관리자 권한 확인 오류:", roleError);
+    message.textContent =
+        "관리자 권한을 확인하지 못했어요. 다시 시도해 주세요.";
+    return;
+}
+
+if (isAdmin !== true) {
+    await supabaseClient.auth.signOut();
+    message.textContent =
+        "관리자 권한이 없는 계정입니다.";
+    return;
+}
+
+message.textContent =
+    "관리자 인증 성공! 상품 관리 기능을 사용할 수 있어요.";
+
+    document.querySelector("#adminPanel").style.display = "block";
+            
+        });
+    
+const productForm = document.querySelector("#productForm");
+const productMessage = document.querySelector("#productMessage");
+
+productForm.addEventListener("submit", async function(event) {
+    event.preventDefault();
+
+    productMessage.textContent = "상품을 등록하고 있어요...";
+
+    // 현재 로그인 세션과 관리자 권한을 다시 확인
+    
+const { data: sessionData, error: sessionError } =
+    await supabaseClient.auth.getSession();
+
+if (sessionError || !sessionData?.session) {
+    productMessage.textContent = "먼저 로그인해 주세요.";
+    return;
+}
+
+
+    const { data: isAdmin, error: roleError } =
+        await supabaseClient.rpc("is_store_admin");
+
+    if (roleError || isAdmin !== true) {
+        productMessage.textContent = "관리자 권한을 확인할 수 없어요.";
+        return;
+    }
+
+    const number =
+        document.querySelector("#productNumber").value.trim();
+    const name =
+        document.querySelector("#productName").value.trim();
+    const image =
+        document.querySelector("#productImage").value.trim();
+    const link =
+        document.querySelector("#productLink").value.trim();
+
+    const { error } = await supabaseClient
+        .from("products")
+        .insert([{ number, name, image, link }]);
+
+   if (error) {
+    console.error("상품 등록 오류:", error);
+
+    if (error.code === "23505") {
+        productMessage.textContent =
+            "이미 사용 중인 상품번호입니다. 다른 번호를 입력해 주세요.";
+    } else {
+        productMessage.textContent =
+            "상품 등록에 실패했어요. 잠시 후 다시 시도해 주세요.";
+    }
+
+    return;
+}
+
+productMessage.textContent = "상품 등록 성공! 🎉";
+productForm.reset();
+
+
+    productMessage.textContent = "상품 등록 성공! 🎉";
+    productForm.reset();
+});
+
+const loadProductsButton = document.getElementById("loadProductsButton");
+const adminProductList = document.getElementById("adminProductList");
+
+
+loadProductsButton.addEventListener("click", async () => {
+    adminProductList.textContent = "1. 로그인 상태 확인 중...";
+
+    try {
+        const {
+            data: { session },
+            error: sessionError
+       } = await supabaseClient.auth.getSession();
+
+        if (sessionError) throw sessionError;
+
+        if (!session) {
+            adminProductList.textContent =
+                "로그인이 필요합니다. 다시 로그인해 주세요.";
+            return;
+        }
+
+        adminProductList.textContent = "2. 관리자 권한 확인 중...";
+
+        const { data: isAdmin, error: roleError } =
+            await supabaseClient.rpc("is_store_admin");
+        if (roleError) throw roleError;
+
+        if (!isAdmin) {
+            adminProductList.textContent =
+                "관리자 권한이 없습니다.";
+            return;
+        }
+
+        adminProductList.textContent = "3. 상품 데이터 조회 중...";
+
+        const { data: products, error } = await supabaseClient
+    .from("products")
+            .select("id, number, name, image, link")
+            .order("number", { ascending: true });
+
+        if (error) throw error;
+
+        adminProductList.replaceChildren();
+
+        if (!products || products.length === 0) {
+            adminProductList.textContent = "등록된 상품이 없습니다.";
+            return;
+        }
+
+        const count = document.createElement("p");
+        count.textContent = `총 ${products.length}개 상품`;
+        adminProductList.appendChild(count);
+
+        
+products.forEach((product) => {
+    const item = document.createElement("div");
+    item.style.cssText =
+        "padding:12px; margin-bottom:10px; border:1px solid #ddd; border-radius:8px;";
+
+    const title = document.createElement("strong");
+    title.textContent = `${product.number} - ${product.name}`;
+
+    const details = document.createElement("p");
+    details.textContent = `이미지: ${product.image}`;
+
+    const editButton = document.createElement("button");
+    editButton.type = "button";
+    editButton.textContent = "수정";
+    editButton.style.marginLeft = "10px";
+
+    editButton.addEventListener("click", () => {
+        document.getElementById("productNumber").value = product.number;
+        document.getElementById("productName").value = product.name;
+        document.getElementById("productImage").value = product.image;
+        document.getElementById("productLink").value = product.link;
+
+        document.getElementById("productMessage").textContent =
+            `상품 ${product.number}의 정보를 불러왔어요. 수정할 내용을 확인해 주세요.`;
+
+        document.getElementById("productForm").scrollIntoView({
+            behavior: "smooth",
+            block: "center"
+        });
+    });
+
+        item.append(title, details, editButton);
+    adminProductList.appendChild(item);
+});
+
+    } catch (error) {
+        console.error("상품 목록 조회 오류:", error);
+        adminProductList.textContent =
+            `오류: ${error.message || "원인을 확인할 수 없습니다."}`;
+    }
+});
+   
+const logoutButton = document.getElementById("logoutButton");
+
+logoutButton.addEventListener("click", async function () {
+    logoutButton.disabled = true;
+    logoutButton.textContent = "로그아웃 중...";
+
+    try {
+        const { error } = await supabaseClient.auth.signOut();
+
+        if (error) {
+            throw error;
+        }
+
+        document.getElementById("adminPanel").style.display = "none";
+
+        logoutButton.textContent = "로그아웃";
+
+        alert("로그아웃되었습니다!");
+
+        window.location.reload();
+
+    } catch (error) {
+        console.error("로그아웃 오류:", error);
+        alert("로그아웃에 실패했습니다: " + error.message);
+
+    } finally {
+        logoutButton.disabled = false;
+        logoutButton.textContent = "로그아웃";
+    }
+});
+
+    </script>
+</body>
+</html>
