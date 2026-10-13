@@ -114,7 +114,6 @@
             id="productNumber"
             type="text"
             placeholder="예: 004"
-            required
         >
 
         <label for="productName">상품명</label>
@@ -132,6 +131,18 @@
             placeholder="예: 004.webp"
             required
         >
+        
+<label for="productImageFile">휴대폰 사진첩에서 이미지 선택</label>
+<input
+    id="productImageFile"
+    type="file"
+    accept="image/jpeg,image/png,image/webp"
+>
+<small>
+    JPG, PNG, WEBP 이미지를 선택할 수 있습니다.
+    사진 업로드 기능은 다음 단계에서 연결됩니다.
+</small>
+
 
         <label for="productLink">Toss 상품 링크</label>
         <input
@@ -251,8 +262,64 @@ if (sessionError || !sessionData?.session) {
         document.querySelector("#productNumber").value.trim();
     const name =
         document.querySelector("#productName").value.trim();
-    const image =
-        document.querySelector("#productImage").value.trim();
+    
+let image =
+    document.querySelector("#productImage").value.trim();
+
+const imageFile =
+    document.getElementById("productImageFile").files[0];
+
+if (imageFile) {
+    productMessage.textContent = "상품 사진을 업로드하고 있어요...";
+
+    const allowedTypes = [
+        "image/jpeg",
+        "image/png",
+        "image/webp"
+    ];
+
+    if (!allowedTypes.includes(imageFile.type)) {
+        productMessage.textContent =
+            "JPG, PNG, WEBP 이미지만 업로드할 수 있어요.";
+        return;
+    }
+
+    if (imageFile.size > 5 * 1024 * 1024) {
+        productMessage.textContent =
+            "이미지 크기는 5MB 이하여야 해요.";
+        return;
+    }
+
+    const extension = {
+        "image/jpeg": "jpg",
+        "image/png": "png",
+        "image/webp": "webp"
+    }[imageFile.type];
+
+    const fileName =
+        `${crypto.randomUUID()}.${extension}`;
+
+    const { error: uploadError } = await supabaseClient.storage
+        .from("product-images")
+        .upload(fileName, imageFile, {
+            contentType: imageFile.type,
+            upsert: false
+        });
+
+    if (uploadError) {
+        console.error("사진 업로드 오류:", uploadError);
+        productMessage.textContent =
+            "사진 업로드에 실패했어요: " + uploadError.message;
+        return;
+    }
+
+    const { data: publicUrlData } = supabaseClient.storage
+        .from("product-images")
+        .getPublicUrl(fileName);
+
+    image = publicUrlData.publicUrl;
+}
+
     const link =
         document.querySelector("#productLink").value.trim();
 
